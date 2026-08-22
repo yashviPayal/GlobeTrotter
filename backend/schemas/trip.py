@@ -1,6 +1,6 @@
-from datetime import date
-
-from pydantic import BaseModel, Field, model_validator
+from decimal import Decimal
+from datetime import date, datetime
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class TripCreate(BaseModel):
@@ -18,19 +18,25 @@ class TripCreate(BaseModel):
     start_date: date
     end_date: date
 
-    accommodation_budget: float = Field(
-        default=0.0,
+    accommodation_budget: Decimal = Field(
+        default=Decimal("0.00"),
         ge=0,
+        decimal_places=2,
+        max_digits=12,
     )
 
-    transport_budget: float = Field(
-        default=0.0,
+    transport_budget: Decimal = Field(
+        default=Decimal("0.00"),
         ge=0,
+        decimal_places=2,
+        max_digits=12,
     )
 
-    meal_budget: float = Field(
-        default=0.0,
+    meal_budget: Decimal = Field(
+        default=Decimal("0.00"),
         ge=0,
+        decimal_places=2,
+        max_digits=12,
     )
 
     @model_validator(mode="after")
@@ -58,19 +64,25 @@ class TripUpdate(BaseModel):
     start_date: date | None = None
     end_date: date | None = None
 
-    accommodation_budget: float | None = Field(
+    accommodation_budget: Decimal | None = Field(
         default=None,
         ge=0,
+        decimal_places=2,
+        max_digits=12,
     )
 
-    transport_budget: float | None = Field(
+    transport_budget: Decimal | None = Field(
         default=None,
         ge=0,
+        decimal_places=2,
+        max_digits=12,
     )
 
-    meal_budget: float | None = Field(
+    meal_budget: Decimal | None = Field(
         default=None,
         ge=0,
+        decimal_places=2,
+        max_digits=12,
     )
 
     is_public: bool | None = None
@@ -83,12 +95,12 @@ class TripResponse(BaseModel):
     description: str | None
     start_date: date
     end_date: date
-    accommodation_budget: float
-    transport_budget: float
-    meal_budget: float
+    accommodation_budget: Decimal
+    transport_budget: Decimal
+    meal_budget: Decimal
     is_public: bool
     share_code: str | None
+    created_at: datetime
+    updated_at: datetime
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = ConfigDict(from_attributes=True)

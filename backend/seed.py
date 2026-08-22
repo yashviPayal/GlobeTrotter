@@ -1,5 +1,37 @@
 from database import SessionLocal
-from models import Activity, City
+from models import Activity, City, Country
+
+
+countries = [
+    {
+        "name": "India",
+        "code": "IN",
+    },
+    {
+        "name": "France",
+        "code": "FR",
+    },
+    {
+        "name": "United Kingdom",
+        "code": "GB",
+    },
+    {
+        "name": "Italy",
+        "code": "IT",
+    },
+    {
+        "name": "Netherlands",
+        "code": "NL",
+    },
+    {
+        "name": "Japan",
+        "code": "JP",
+    },
+    {
+        "name": "United Arab Emirates",
+        "code": "AE",
+    },
+]
 
 
 cities = [
@@ -60,6 +92,22 @@ cities = [
         "image_url": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23",
     },
     {
+        "name": "Goa",
+        "country": "India",
+        "region": "Asia",
+        "cost_index": 0.6,
+        "popularity": 90,
+        "image_url": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2",
+    },
+    {
+        "name": "Mumbai",
+        "country": "India",
+        "region": "Asia",
+        "cost_index": 0.7,
+        "popularity": 88,
+        "image_url": "https://images.unsplash.com/photo-1570168007204-dfb528c6958f",
+    },
+    {
         "name": "Paris",
         "country": "France",
         "region": "Europe",
@@ -106,22 +154,6 @@ cities = [
         "cost_index": 1.6,
         "popularity": 95,
         "image_url": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c",
-    },
-    {
-        "name": "Goa",
-        "country": "India",
-        "region": "Asia",
-        "cost_index": 0.6,
-        "popularity": 90,
-        "image_url": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2",
-    },
-    {
-        "name": "Mumbai",
-        "country": "India",
-        "region": "Asia",
-        "cost_index": 0.7,
-        "popularity": 88,
-        "image_url": "https://images.unsplash.com/photo-1570168007204-dfb528c6958f",
     },
 ]
 
@@ -288,6 +320,52 @@ activities = {
             20,
         ),
     ],
+    "Goa": [
+        (
+            "Baga Beach",
+            "Relax and enjoy Goa's famous coastline.",
+            "Leisure",
+            3,
+            0,
+        ),
+        (
+            "Fort Aguada",
+            "Explore a historic Portuguese fort.",
+            "History",
+            2,
+            5,
+        ),
+        (
+            "Dudhsagar Falls",
+            "Visit one of Goa's most famous waterfalls.",
+            "Adventure",
+            6,
+            20,
+        ),
+    ],
+    "Mumbai": [
+        (
+            "Gateway of India",
+            "Visit Mumbai's iconic waterfront monument.",
+            "Sightseeing",
+            1.5,
+            0,
+        ),
+        (
+            "Elephanta Caves",
+            "Explore ancient rock-cut cave temples.",
+            "History",
+            4,
+            10,
+        ),
+        (
+            "Marine Drive",
+            "Enjoy the famous Mumbai seafront.",
+            "Leisure",
+            2,
+            0,
+        ),
+    ],
     "Paris": [
         (
             "Eiffel Tower",
@@ -426,52 +504,6 @@ activities = {
             35,
         ),
     ],
-    "Goa": [
-        (
-            "Baga Beach",
-            "Relax and enjoy Goa's famous coastline.",
-            "Leisure",
-            3,
-            0,
-        ),
-        (
-            "Fort Aguada",
-            "Explore a historic Portuguese fort.",
-            "History",
-            2,
-            5,
-        ),
-        (
-            "Dudhsagar Falls",
-            "Visit one of Goa's most famous waterfalls.",
-            "Adventure",
-            6,
-            20,
-        ),
-    ],
-    "Mumbai": [
-        (
-            "Gateway of India",
-            "Visit Mumbai's iconic waterfront monument.",
-            "Sightseeing",
-            1.5,
-            0,
-        ),
-        (
-            "Elephanta Caves",
-            "Explore ancient rock-cut cave temples.",
-            "History",
-            4,
-            10,
-        ),
-        (
-            "Marine Drive",
-            "Enjoy the famous Mumbai seafront.",
-            "Leisure",
-            2,
-            0,
-        ),
-    ],
 }
 
 
@@ -479,33 +511,58 @@ def seed_database():
     db = SessionLocal()
 
     try:
-        # Store existing cities by name so the script can be run multiple times.
+        existing_countries = {
+            country.code: country
+            for country in db.query(Country).all()
+        }
+
+        for country_data in countries:
+            if country_data["code"] not in existing_countries:
+                country = Country(**country_data)
+                db.add(country)
+                existing_countries[country.code] = country
+
+        db.flush()
+
+        country_by_name = {
+            country.name: country
+            for country in existing_countries.values()
+        }
+
         existing_cities = {
             city.name: city
             for city in db.query(City).all()
         }
 
-        # Add only cities that are not already present.
         for city_data in cities:
             city_name = city_data["name"]
 
-            if city_name not in existing_cities:
-                city = City(**city_data)
-                db.add(city)
-                existing_cities[city_name] = city
+            if city_name in existing_cities:
+                continue
 
-        # Flush so newly created cities receive their IDs.
+            country = country_by_name[city_data["country"]]
+
+            city = City(
+                name=city_data["name"],
+                country_id=country.id,
+                region=city_data["region"],
+                cost_index=city_data["cost_index"],
+                popularity=city_data["popularity"],
+                image_url=city_data["image_url"],
+            )
+
+            db.add(city)
+            existing_cities[city_name] = city
+
         db.flush()
 
-        # Add activities only if the same activity doesn't already exist
-        # for that city.
         added_activities = 0
 
         for city_name, city_activities in activities.items():
             city = existing_cities.get(city_name)
 
             if not city:
-                print(f"Warning: city '{city_name}' not found.")
+                print(f"Warning: city '{city_name}' was not found.")
                 continue
 
             existing_activity_names = {
@@ -539,6 +596,7 @@ def seed_database():
         db.commit()
 
         print("Seed completed successfully.")
+        print(f"Countries available: {len(existing_countries)}")
         print(f"Cities available: {len(existing_cities)}")
         print(f"New activities added: {added_activities}")
 
