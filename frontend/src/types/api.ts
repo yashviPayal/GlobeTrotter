@@ -4,7 +4,13 @@
  * These types are the contract between the two halves of the app — when a
  * backend schema changes, this file changes with it and every consumer fails
  * to compile rather than failing at runtime.
+ *
+ * Money is DECIMAL(12,2) server-side and arrives as a JSON string, so it is
+ * typed as `Money` and parsed through lib/money.ts rather than used directly.
  */
+
+/** A DECIMAL(12,2) as it arrives over the wire. Parse with toNumber(). */
+export type Money = string | number
 
 export interface User {
   id: number
@@ -18,10 +24,18 @@ export interface TokenResponse {
   user: User
 }
 
+export interface Country {
+  id: number
+  name: string
+  code: string
+}
+
 export interface City {
   id: number
   name: string
-  country: string
+  country_id: number
+  /** Nested so a city can render as "Paris, France" without a second request. */
+  country: Country
   region: string | null
   cost_index: number
   popularity: number
@@ -34,7 +48,7 @@ export interface Activity {
   description: string | null
   category: string
   duration_hours: number
-  estimated_cost: number
+  estimated_cost: Money
   image_url: string | null
 }
 
@@ -45,11 +59,13 @@ export interface Trip {
   description: string | null
   start_date: string
   end_date: string
-  accommodation_budget: number
-  transport_budget: number
-  meal_budget: number
+  accommodation_budget: Money
+  transport_budget: Money
+  meal_budget: Money
   is_public: boolean
   share_code: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface TripCreate {
@@ -57,9 +73,9 @@ export interface TripCreate {
   description?: string | null
   start_date: string
   end_date: string
-  accommodation_budget?: number
-  transport_budget?: number
-  meal_budget?: number
+  accommodation_budget?: Money
+  transport_budget?: Money
+  meal_budget?: Money
 }
 
 export type TripUpdate = Partial<TripCreate & { is_public: boolean }>
