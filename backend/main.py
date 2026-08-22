@@ -6,6 +6,7 @@ from routers.countries import router as countries_router
 from routers.trips import router as trips_router
 from routers.activities import router as activities_router
 from routers.budget import router as budget_router
+from routers.public import router as public_router
 
 app = FastAPI(
     title="GlobeTrotter API",
@@ -22,6 +23,7 @@ app.include_router(trips_router)
 app.include_router(stops_router)
 app.include_router(activities_router)
 app.include_router(budget_router)
+app.include_router(public_router)
 
 @app.get("/")
 def root():

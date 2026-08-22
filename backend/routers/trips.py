@@ -150,6 +150,37 @@ def update_trip(
 
     return trip
 
+@router.patch(
+    "/{trip_id}/share",
+    response_model=TripResponse,
+)
+def toggle_trip_sharing(
+    trip_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    trip = db.scalar(
+        select(Trip).where(
+            Trip.id == trip_id,
+            Trip.user_id == current_user.id,
+        )
+    )
+
+    if not trip:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Trip not found",
+        )
+
+    trip.is_public = not trip.is_public
+
+    if not trip.share_code:
+        trip.share_code = secrets.token_urlsafe(8)
+
+    db.commit()
+    db.refresh(trip)
+
+    return trip
 
 @router.delete(
     "/{trip_id}",
@@ -175,3 +206,4 @@ def delete_trip(
 
     db.delete(trip)
     db.commit()
+
