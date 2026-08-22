@@ -41,14 +41,24 @@ def calculate_budget_data(
     """
     Calculate the current budget state for a trip.
 
-    Allocated budget:
+    The trip's three budget columns are the envelope the
+    traveller has set aside; scheduled activities draw it down.
+
+    Allocated:
         accommodation + transport + meals
 
-    Planned spend:
-        allocated budget + activity costs
+    Planned:
+        activity costs scheduled so far
 
     Remaining:
-        allocated budget - activity costs
+        allocated - planned
+
+    This holds the invariant `planned + remaining == allocated`.
+    Planned previously added the allocation to the activity
+    costs, which broke that: `remaining` subtracted the same
+    activity total that `planned` had added, so the two fields
+    described different budgets and utilization_percent agreed
+    with neither.
 
     Activity costs are read from trip_activities so the result
     always reflects the current itinerary.
@@ -88,8 +98,7 @@ def calculate_budget_data(
     )
 
     total_planned = money(
-        total_allocated
-        + activities
+        activities
     )
 
     remaining = money(
@@ -116,6 +125,16 @@ def calculate_budget_data(
         "remaining": remaining,
         "utilization_percent": utilization_percent,
     }
+
+
+def category(allocated: Decimal, planned: Decimal) -> BudgetCategory:
+    """Keeps remaining derived rather than hardcoded, so a category can
+    never report a remaining that disagrees with its own two numbers."""
+    return BudgetCategory(
+        allocated=allocated,
+        planned=planned,
+        remaining=money(allocated - planned),
+    )
 
 
 @router.get(
@@ -148,28 +167,26 @@ def get_trip_budget(
     return BudgetResponse(
         trip_id=trip.id,
 
-        accommodation=BudgetCategory(
-            allocated=budget["accommodation"],
-            planned=budget["accommodation"],
-            remaining=MONEY_ZERO,
+        accommodation=category(
+            budget["accommodation"],
+            budget["accommodation"],
         ),
 
-        transport=BudgetCategory(
-            allocated=budget["transport"],
-            planned=budget["transport"],
-            remaining=MONEY_ZERO,
+        transport=category(
+            budget["transport"],
+            budget["transport"],
         ),
 
-        meals=BudgetCategory(
-            allocated=budget["meals"],
-            planned=budget["meals"],
-            remaining=MONEY_ZERO,
+        meals=category(
+            budget["meals"],
+            budget["meals"],
         ),
 
-        activities=BudgetCategory(
-            allocated=MONEY_ZERO,
-            planned=budget["activities"],
-            remaining=MONEY_ZERO,
+        # Activities have no dedicated allocation; they draw on
+        # the trip's overall envelope.
+        activities=category(
+            MONEY_ZERO,
+            budget["activities"],
         ),
 
         total_allocated=budget["total_allocated"],

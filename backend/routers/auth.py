@@ -9,7 +9,9 @@ from schemas.auth import (
     RegisterRequest,
     TokenResponse,
     UserResponse,
+    UserUpdate,
 )
+from utils.dependencies import get_current_user
 from utils.auth import (
     create_access_token,
     hash_password,
@@ -84,3 +86,51 @@ def login(
         access_token=token,
         user=user,
     )
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+)
+def get_me(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
+
+
+@router.patch(
+    "/me",
+    response_model=UserResponse,
+)
+def update_me(
+    request: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    updates = request.model_dump(exclude_unset=True)
+
+    if "name" in updates and updates["name"] is not None:
+        current_user.name = updates["name"].strip()
+
+    if "email" in updates and updates["email"] is not None:
+        email = updates["email"].lower()
+
+        if email != current_user.email:
+            taken = db.scalar(
+                select(User).where(
+                    User.email == email,
+                    User.id != current_user.id,
+                )
+            )
+
+            if taken:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Email is already registered",
+                )
+
+            current_user.email = email
+
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user
