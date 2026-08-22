@@ -4,6 +4,7 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { RegisterPage } from '@/features/auth/RegisterPage'
 import { CitiesPage } from '@/features/cities/CitiesPage'
 import { CityDetailPage } from '@/features/cities/CityDetailPage'
+import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { CreateTripPage } from '@/features/trips/CreateTripPage'
 import { TripsPage } from '@/features/trips/TripsPage'
 
@@ -27,15 +28,7 @@ export const router = createBrowserRouter([
       </RequireAuth>
     ),
     children: [
-      {
-        index: true,
-        element: (
-          <Placeholder
-            title="Dashboard"
-            description="Screen 2 — upcoming trips, popular cities and budget highlights."
-          />
-        ),
-      },
+      { index: true, element: <DashboardPage /> },
       { path: 'trips', element: <TripsPage /> },
       { path: 'trips/new', element: <CreateTripPage /> },
       {
