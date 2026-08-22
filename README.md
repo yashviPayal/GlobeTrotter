@@ -1,0 +1,2 @@
+# GlobeTrotter
+Odoo x LDCE
