@@ -83,7 +83,6 @@ export function RegisterPage() {
           type="password"
           autoComplete="new-password"
           placeholder="At least 8 characters"
-          hint="Use 8 characters or more."
           error={errors.password?.message}
           {...register('password')}
         />
