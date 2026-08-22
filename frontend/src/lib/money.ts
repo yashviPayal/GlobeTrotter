@@ -18,9 +18,17 @@ export function sum(...values: Array<string | number | null | undefined>): numbe
   return cents / 100
 }
 
-const formatter = new Intl.NumberFormat('en-IN', {
+/**
+ * The schema has no currency column, so the whole app commits to one unit.
+ * USD matches the seeded activity costs (Eiffel Tower 25, Louvre 20, Burj
+ * Khalifa 45 are all real USD prices). Change this one constant if the team
+ * decides to store and display something else.
+ */
+export const CURRENCY = 'USD'
+
+const formatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
-  currency: 'INR',
+  currency: CURRENCY,
   maximumFractionDigits: 0,
 })
 
