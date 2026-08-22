@@ -17,7 +17,7 @@ export function AuthLayout({
 }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <aside className="hidden flex-col justify-between bg-ink p-10 text-white lg:flex">
+      <aside className="hidden flex-col justify-between bg-brand p-10 text-white lg:flex">
         <span className="font-display text-xl font-bold">
           Globe<span className="text-primary">Trotter</span>
         </span>

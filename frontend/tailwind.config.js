@@ -15,6 +15,7 @@ export default {
           DEFAULT: 'var(--accent)',
           tint: 'var(--accent-tint)',
         },
+        brand: 'var(--brand-deep)',
         ink: 'var(--ink)',
         muted: 'var(--muted)',
         soft: 'var(--soft)',
