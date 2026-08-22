@@ -6,6 +6,7 @@ import { CitiesPage } from '@/features/cities/CitiesPage'
 import { CityDetailPage } from '@/features/cities/CityDetailPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { CreateTripPage } from '@/features/trips/CreateTripPage'
+import { TripDetailPage } from '@/features/trips/TripDetailPage'
 import { TripsPage } from '@/features/trips/TripsPage'
 
 import { AppShell } from './AppShell'
@@ -31,12 +32,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'trips', element: <TripsPage /> },
       { path: 'trips/new', element: <CreateTripPage /> },
-      {
-        path: 'trips/:tripId',
-        element: (
-          <Placeholder title="Itinerary" description="Screen 6 — the full day-wise plan." />
-        ),
-      },
+      { path: 'trips/:tripId', element: <TripDetailPage /> },
       {
         path: 'trips/:tripId/build',
         element: (

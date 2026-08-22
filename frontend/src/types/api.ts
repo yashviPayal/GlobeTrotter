@@ -85,3 +85,81 @@ export type TripUpdate = Partial<TripCreate & { is_public: boolean }>
  * so it can never be stale. See docs/DATABASE.md.
  */
 export type TripStatus = 'ongoing' | 'upcoming' | 'completed'
+
+/* ---------- Itinerary ---------- */
+
+export interface StopCity {
+  id: number
+  name: string
+  country_id: number
+  country: Country
+  region: string | null
+  cost_index: number
+  popularity: number
+  image_url: string | null
+}
+
+export interface TripStop {
+  id: number
+  trip_id: number
+  city_id: number
+  start_date: string
+  end_date: string
+  sequence: number
+  city: StopCity
+}
+
+export interface StopCreate {
+  city_id: number
+  start_date: string
+  end_date: string
+}
+
+export interface ActivitySummary {
+  id: number
+  name: string
+  description: string | null
+  category: string
+  duration_hours: number
+  estimated_cost: Money
+  image_url: string | null
+}
+
+export interface TripActivity {
+  id: number
+  trip_id: number
+  trip_stop_id: number
+  activity_id: number
+  activity_date: string
+  start_time: string | null
+  estimated_cost: Money
+  activity: ActivitySummary
+}
+
+export interface TripActivityCreate {
+  trip_stop_id: number
+  activity_id: number
+  activity_date?: string | null
+  start_time?: string | null
+  estimated_cost?: Money | null
+}
+
+/* ---------- Budget ---------- */
+
+export interface BudgetCategory {
+  allocated: Money
+  planned: Money
+  remaining: Money
+}
+
+export interface Budget {
+  trip_id: number
+  accommodation: BudgetCategory
+  transport: BudgetCategory
+  meals: BudgetCategory
+  activities: BudgetCategory
+  total_allocated: Money
+  total_planned: Money
+  remaining: Money
+  utilization_percent: Money
+}
