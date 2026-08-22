@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from database import get_db
 from models import Activity, City
@@ -19,6 +19,7 @@ def get_cities(
 ):
     statement = (
         select(City)
+        .options(selectinload(City.country))
         .order_by(City.popularity.desc())
     )
 
@@ -41,6 +42,7 @@ def search_cities(
 
     statement = (
         select(City)
+        .options(selectinload(City.country))
         .where(City.name.ilike(search_term))
         .order_by(City.popularity.desc())
     )
