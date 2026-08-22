@@ -4,14 +4,12 @@ import type { Budget } from '@/types/api'
 
 /**
  * The trip's budget columns are an envelope; scheduled activities draw it
- * down. That is what the API's `remaining` and `utilization_percent` measure —
- * they count activity spend against the total allocation, which is why
- * `total_planned` can equal `total_allocated` while nothing has been used.
+ * down, so `total_planned + remaining == total_allocated`.
  *
- * Per-category `planned` currently mirrors `allocated` for stay, transport and
- * meals, so those are shown as plain amounts rather than as meters that would
- * always read full. Only the overall draw-down gets a meter, because only it
- * is a real ratio against a limit.
+ * Per-category `planned` mirrors `allocated` for stay, transport and meals —
+ * the app tracks no individual line items for those — so they are shown as
+ * plain amounts. Only the overall draw-down gets a meter, because only it is a
+ * real ratio against a limit.
  */
 
 const ALLOCATIONS: Array<{ key: 'accommodation' | 'transport' | 'meals'; label: string }> = [
@@ -22,7 +20,7 @@ const ALLOCATIONS: Array<{ key: 'accommodation' | 'transport' | 'meals'; label: 
 
 export function BudgetBreakdown({ budget }: { budget: Budget }) {
   const allocated = toNumber(budget.total_allocated)
-  const scheduled = toNumber(budget.activities.planned)
+  const scheduled = toNumber(budget.total_planned)
   const remaining = toNumber(budget.remaining)
   const over = remaining < 0
 

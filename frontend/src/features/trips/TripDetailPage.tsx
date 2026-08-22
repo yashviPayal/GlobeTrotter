@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
-import { useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useMemo } from 'react'
+import { Link, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -11,19 +11,19 @@ import { formatMoney, toNumber } from '@/lib/money'
 import { queryKeys } from '@/lib/queryKeys'
 import type { TripActivity, TripStop } from '@/types/api'
 
-import { AddStopForm } from './AddStopForm'
 import { BudgetBreakdown } from './BudgetBreakdown'
 import { ShareControl } from './ShareControl'
-import { StopActivityPicker } from './StopActivityPicker'
-import {
-  deleteStop,
-  deleteTripActivity,
-  getTrip,
-  getTripBudget,
-  listStops,
-  listTripActivities,
-} from './api'
+import { getTrip, getTripBudget, listTripActivities, listTripStops } from './api'
 import { STATUS_LABEL, STATUS_TONE, getTripDays, getTripStatus } from './tripStatus'
+
+/**
+ * Screen 6 — the itinerary as a finished plan, read-only.
+ *
+ * Editing lives in the builder at /build, which is screen 5 in the brief and
+ * owns drag-reorder and the assistant. Keeping them apart means one place to
+ * change the plan and one place to read it, rather than two screens that each
+ * half-edit it.
+ */
 
 function formatStopRange(stop: TripStop): string {
   const start = parseISO(stop.start_date)
@@ -36,11 +36,6 @@ function formatStopRange(stop: TripStop): string {
 export function TripDetailPage() {
   const { tripId } = useParams()
   const id = Number(tripId)
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-
-  const [addingStop, setAddingStop] = useState(false)
-  const [pickingFor, setPickingFor] = useState<TripStop | null>(null)
 
   const tripQuery = useQuery({
     queryKey: queryKeys.trips.detail(id),
@@ -50,7 +45,7 @@ export function TripDetailPage() {
 
   const stopsQuery = useQuery({
     queryKey: queryKeys.trips.stops(id),
-    queryFn: ({ signal }) => listStops(id, signal),
+    queryFn: ({ signal }) => listTripStops(id, signal),
     enabled: Number.isFinite(id),
   })
 
@@ -87,22 +82,6 @@ export function TripDetailPage() {
 
     return map
   }, [activitiesQuery.data])
-
-  const invalidateItinerary = () => {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.trips.stops(id) })
-    void queryClient.invalidateQueries({ queryKey: queryKeys.trips.activities(id) })
-    void queryClient.invalidateQueries({ queryKey: queryKeys.trips.budget(id) })
-  }
-
-  const removeStop = useMutation({
-    mutationFn: (stopId: number) => deleteStop(id, stopId),
-    onSuccess: invalidateItinerary,
-  })
-
-  const removeActivity = useMutation({
-    mutationFn: (tripActivityId: number) => deleteTripActivity(id, tripActivityId),
-    onSuccess: invalidateItinerary,
-  })
 
   if (tripQuery.isPending) return <LoadingState label="Loading trip…" />
 
@@ -151,13 +130,16 @@ export function TripDetailPage() {
           {trip.description && <p className="mt-2 max-w-2xl text-sm">{trip.description}</p>}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link to={`/trips/${trip.id}/build`}>
+            <Button>Edit itinerary</Button>
+          </Link>
           <Link to={`/trips/${trip.id}/calendar`}>
             <Button variant="secondary">Timeline</Button>
           </Link>
-          <Button variant="ghost" onClick={() => navigate('/trips')}>
-            Back to trips
-          </Button>
+          <Link to={`/trips/${trip.id}/budget`}>
+            <Button variant="secondary">Budget</Button>
+          </Link>
         </div>
       </header>
 
@@ -166,23 +148,7 @@ export function TripDetailPage() {
       <ShareControl trip={trip} />
 
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold">Itinerary</h2>
-            <p className="mt-0.5 text-sm text-muted">
-              Cities in the order you will visit them, with what you plan to do in each.
-            </p>
-          </div>
-
-          {!addingStop && <Button onClick={() => setAddingStop(true)}>Add stop</Button>}
-        </div>
-
-        {addingStop && (
-          <Card className="p-6">
-            <h3 className="mb-4 font-medium">Add a stop</h3>
-            <AddStopForm trip={trip} onDone={() => setAddingStop(false)} />
-          </Card>
-        )}
+        <h2 className="text-lg font-semibold">Itinerary</h2>
 
         {stopsQuery.isPending && <LoadingState label="Loading itinerary…" />}
 
@@ -193,11 +159,15 @@ export function TripDetailPage() {
           />
         )}
 
-        {stopsQuery.isSuccess && stops.length === 0 && !addingStop && (
+        {stopsQuery.isSuccess && stops.length === 0 && (
           <EmptyState
             title="No stops yet"
-            description="Add the first city on this trip and its activities will show up underneath it."
-            action={<Button onClick={() => setAddingStop(true)}>Add stop</Button>}
+            description="Add the first city on this trip in the builder and it will show up here."
+            action={
+              <Link to={`/trips/${trip.id}/build`}>
+                <Button>Build the itinerary</Button>
+              </Link>
+            }
           />
         )}
 
@@ -212,42 +182,22 @@ export function TripDetailPage() {
             return (
               <li key={stop.id}>
                 <Card className="flex flex-col gap-4 p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-start gap-3">
-                      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary">
-                        {index + 1}
-                      </span>
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-on-primary">
+                      {index + 1}
+                    </span>
 
-                      <div className="min-w-0">
-                        <h3 className="font-display text-lg font-semibold leading-tight">
-                          {stop.city.name}
-                          <span className="ml-2 text-sm font-normal text-muted">
-                            {stop.city.country.name}
-                          </span>
-                        </h3>
-                        <p className="mt-0.5 text-sm text-muted">
-                          {formatStopRange(stop)}
-                          {stopActivities.length > 0 && ` · ${formatMoney(stopCost)} of activities`}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => setPickingFor(pickingFor?.id === stop.id ? null : stop)}
-                      >
-                        Add activity
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        loading={removeStop.isPending && removeStop.variables === stop.id}
-                        onClick={() => removeStop.mutate(stop.id)}
-                      >
-                        Remove
-                      </Button>
+                    <div className="min-w-0">
+                      <h3 className="font-display text-lg font-semibold leading-tight">
+                        {stop.city.name}
+                        <span className="ml-2 text-sm font-normal text-muted">
+                          {stop.city.country.name}
+                        </span>
+                      </h3>
+                      <p className="mt-0.5 text-sm text-muted">
+                        {formatStopRange(stop)}
+                        {stopActivities.length > 0 && ` · ${formatMoney(stopCost)} of activities`}
+                      </p>
                     </div>
                   </div>
 
@@ -268,33 +218,14 @@ export function TripDetailPage() {
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-3">
-                            <span className="font-medium">
-                              {toNumber(activity.estimated_cost) === 0
-                                ? 'Free'
-                                : formatMoney(activity.estimated_cost)}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => removeActivity.mutate(activity.id)}
-                              className="text-xs text-muted underline-offset-2 hover:text-danger hover:underline"
-                            >
-                              Remove
-                            </button>
-                          </div>
+                          <span className="font-medium">
+                            {toNumber(activity.estimated_cost) === 0
+                              ? 'Free'
+                              : formatMoney(activity.estimated_cost)}
+                          </span>
                         </li>
                       ))}
                     </ul>
-                  )}
-
-                  {pickingFor?.id === stop.id && (
-                    <div className="border-t border-hairline pt-4">
-                      <StopActivityPicker
-                        tripId={id}
-                        stop={stop}
-                        onDone={() => setPickingFor(null)}
-                      />
-                    </div>
                   )}
                 </Card>
               </li>

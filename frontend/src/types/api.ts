@@ -16,6 +16,13 @@ export interface User {
   id: number
   name: string
   email: string
+  /** 'user' or 'admin' — gates the analytics screen. */
+  role: string
+}
+
+export interface UserUpdate {
+  name?: string
+  email?: string
 }
 
 export interface TokenResponse {

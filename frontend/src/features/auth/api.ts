@@ -1,5 +1,5 @@
 import { api } from '@/lib/api'
-import type { TokenResponse, User } from '@/types/api'
+import type { TokenResponse, User, UserUpdate } from '@/types/api'
 
 interface RegisterPayload {
   name: string
@@ -18,4 +18,12 @@ export function register(payload: RegisterPayload) {
 
 export function login(payload: LoginPayload) {
   return api.post<TokenResponse>('/auth/login', payload)
+}
+
+export function getMe(signal?: AbortSignal) {
+  return api.get<User>('/auth/me', signal)
+}
+
+export function updateMe(payload: UserUpdate) {
+  return api.patch<User>('/auth/me', payload)
 }
