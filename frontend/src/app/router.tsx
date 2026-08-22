@@ -5,6 +5,7 @@ import { RegisterPage } from '@/features/auth/RegisterPage'
 import { CitiesPage } from '@/features/cities/CitiesPage'
 import { CityDetailPage } from '@/features/cities/CityDetailPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
+import { ProfilePage } from '@/features/profile/ProfilePage'
 import { CreateTripPage } from '@/features/trips/CreateTripPage'
 import { PublicTripPage } from '@/features/trips/PublicTripPage'
 import { TripCalendarPage } from '@/features/trips/TripCalendarPage'
@@ -12,7 +13,6 @@ import { TripDetailPage } from '@/features/trips/TripDetailPage'
 import { TripsPage } from '@/features/trips/TripsPage'
 
 import { AppShell } from './AppShell'
-import { Placeholder } from './Placeholder'
 import { RequireAuth } from './RequireAuth'
 
 /**
@@ -37,29 +37,18 @@ export const router = createBrowserRouter([
       { path: 'trips/new', element: <CreateTripPage /> },
       { path: 'trips/:tripId', element: <TripDetailPage /> },
       { path: 'trips/:tripId/calendar', element: <TripCalendarPage /> },
+      // The builder and budget both live on the trip page now.
       {
         path: 'trips/:tripId/build',
-        element: (
-          <Placeholder
-            title="Itinerary builder"
-            description="Screen 5 — add stops, dates and activities."
-          />
-        ),
+        element: <Navigate to=".." relative="path" replace />,
       },
       {
         path: 'trips/:tripId/budget',
-        element: (
-          <Placeholder title="Budget" description="Screen 9 — cost breakdown and alerts." />
-        ),
+        element: <Navigate to=".." relative="path" replace />,
       },
       { path: 'cities', element: <CitiesPage /> },
       { path: 'cities/:cityId', element: <CityDetailPage /> },
-      {
-        path: 'profile',
-        element: (
-          <Placeholder title="Profile" description="Screen 12 — your details and preferences." />
-        ),
-      },
+      { path: 'profile', element: <ProfilePage /> },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },
