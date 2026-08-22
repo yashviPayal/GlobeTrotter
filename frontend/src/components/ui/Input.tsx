@@ -10,20 +10,26 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 function EyeIcon({ crossed }: { crossed: boolean }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-4.5 w-4.5"
-      style={{ width: '1.125rem', height: '1.125rem' }}
-      aria-hidden="true"
-    >
-      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
-      <circle cx="12" cy="12" r="3" />
-      {crossed && <path d="m4 20 16-16" />}
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path
+        d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Filled pupil — an outline-only eye at this size reads as a smudge. */}
+      <circle cx="12" cy="12" r="2.75" fill="currentColor" />
+      {crossed && (
+        <path
+          d="m4 20 16-16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      )}
     </svg>
   )
 }
@@ -63,7 +69,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           className={clsx(
             'h-10 w-full rounded-control border bg-surface px-3 text-sm text-ink',
             'placeholder:text-soft focus:outline-none focus:ring-2 focus:ring-primary/40',
-            isPassword && 'pr-11',
+            isPassword && 'pr-12',
             error ? 'border-danger' : 'border-hairline focus:border-primary',
             className,
           )}
@@ -78,7 +84,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             // Not a tab stop: keyboard users move label -> field -> next field
             // without an extra hop they did not ask for.
             tabIndex={-1}
-            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-control text-muted transition-colors hover:text-ink focus-visible:text-ink"
+            className="absolute inset-y-1 right-1 flex w-9 items-center justify-center rounded-control text-ink/75 transition-colors hover:bg-primary-tint hover:text-primary"
           >
             <EyeIcon crossed={revealed} />
           </button>
