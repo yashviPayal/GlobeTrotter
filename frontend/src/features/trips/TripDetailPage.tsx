@@ -13,6 +13,7 @@ import type { TripActivity, TripStop } from '@/types/api'
 
 import { AddStopForm } from './AddStopForm'
 import { BudgetBreakdown } from './BudgetBreakdown'
+import { ShareControl } from './ShareControl'
 import { StopActivityPicker } from './StopActivityPicker'
 import {
   deleteStop,
@@ -156,6 +157,8 @@ export function TripDetailPage() {
       </header>
 
       {budgetQuery.data && <BudgetBreakdown budget={budgetQuery.data} />}
+
+      <ShareControl trip={trip} />
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-end justify-between gap-3">

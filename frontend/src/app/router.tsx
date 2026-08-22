@@ -6,6 +6,7 @@ import { CitiesPage } from '@/features/cities/CitiesPage'
 import { CityDetailPage } from '@/features/cities/CityDetailPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { CreateTripPage } from '@/features/trips/CreateTripPage'
+import { PublicTripPage } from '@/features/trips/PublicTripPage'
 import { TripDetailPage } from '@/features/trips/TripDetailPage'
 import { TripsPage } from '@/features/trips/TripsPage'
 
@@ -21,6 +22,7 @@ import { RequireAuth } from './RequireAuth'
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
+  { path: '/p/:shareCode', element: <PublicTripPage /> },
   {
     path: '/',
     element: (

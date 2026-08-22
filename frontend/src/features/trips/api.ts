@@ -1,4 +1,4 @@
-import { api } from '@/lib/api'
+import { api, request } from '@/lib/api'
 import type {
   Budget,
   StopCreate,
@@ -8,6 +8,7 @@ import type {
   TripCreate,
   TripStop,
   TripUpdate,
+  PublicTrip,
 } from '@/types/api'
 
 export function listTrips(signal?: AbortSignal) {
@@ -62,4 +63,15 @@ export function deleteTripActivity(tripId: number, tripActivityId: number) {
 
 export function getTripBudget(tripId: number, signal?: AbortSignal) {
   return api.get<Budget>(`/trips/${tripId}/budget/`, signal)
+}
+
+/* ---------- Sharing ---------- */
+
+/** Toggles public visibility and returns the trip with its share_code. */
+export function toggleTripSharing(tripId: number) {
+  return request<Trip>(`/trips/${tripId}/share`, { method: 'PATCH' })
+}
+
+export function getPublicTrip(shareCode: string, signal?: AbortSignal) {
+  return api.get<PublicTrip>(`/public/trips/${shareCode}`, signal)
 }

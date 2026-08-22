@@ -163,3 +163,45 @@ export interface Budget {
   remaining: Money
   utilization_percent: Money
 }
+
+/* ---------- Public sharing ---------- */
+
+export interface PublicActivity {
+  id: number
+  name: string
+  category: string
+  duration_hours: number
+  estimated_cost: Money
+  activity_date: string
+  start_time: string | null
+}
+
+export interface PublicStop {
+  id: number
+  sequence: number
+  city_name: string
+  country_name: string
+  start_date: string
+  end_date: string
+  activities: PublicActivity[]
+}
+
+export interface PublicBudget {
+  accommodation: Money
+  transport: Money
+  meals: Money
+  activities: Money
+  total_allocated: Money
+  total_planned: Money
+  remaining: Money
+  utilization_percent: Money
+}
+
+export interface PublicTrip {
+  name: string
+  description: string | null
+  start_date: string
+  end_date: string
+  stops: PublicStop[]
+  budget: PublicBudget
+}
