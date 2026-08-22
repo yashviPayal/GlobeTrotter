@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { ApiError } from '@/lib/api'
+import { todayISO } from '@/lib/dates'
 import { formatMoney, sum } from '@/lib/money'
 import { queryKeys } from '@/lib/queryKeys'
 
@@ -26,6 +27,7 @@ export function CreateTripPage() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<TripFormValues>({
     resolver: zodResolver(tripSchema),
@@ -39,6 +41,12 @@ export function CreateTripPage() {
       meal_budget: '',
     },
   })
+
+  const today = todayISO()
+  const startDate = watch('start_date')
+  const endDate = watch('end_date')
+
+  const startDateField = register('start_date')
 
   // Live total, so the budget is visible while it is being decided rather
   // than only after the trip is saved.
@@ -107,12 +115,26 @@ export function CreateTripPage() {
             <Input
               label="Start date"
               type="date"
+              min={today}
               error={errors.start_date?.message}
-              {...register('start_date')}
+              {...startDateField}
+              onChange={(event) => {
+                void startDateField.onChange(event)
+
+                // Moving the start past the end would strand the end date
+                // behind it, so drag it along rather than showing an error.
+                const value = event.target.value
+                if (value && endDate && endDate < value) {
+                  setValue('end_date', value, { shouldValidate: true })
+                }
+              }}
             />
             <Input
               label="End date"
               type="date"
+              // Everything before the chosen start is greyed out in the picker,
+              // and falls back to today until a start date is picked.
+              min={startDate || today}
               error={errors.end_date?.message}
               {...register('end_date')}
             />

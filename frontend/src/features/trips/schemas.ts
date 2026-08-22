@@ -1,8 +1,15 @@
 import { z } from 'zod'
 
+import { todayISO } from '@/lib/dates'
+
 /**
  * Mirrors TripCreate in backend/schemas/trip.py, including the model
  * validator that rejects an end date before the start date.
+ *
+ * The past-date rules are stricter than the API's: you cannot plan a trip that
+ * already started. The date inputs also carry `min` attributes, so the picker
+ * greys those days out — these refinements are the backstop for typed input
+ * and for browsers that ignore `min`.
  */
 
 const money = z
@@ -28,9 +35,17 @@ export const tripSchema = z
     transport_budget: money,
     meal_budget: money,
   })
-  .refine((values) => values.end_date >= values.start_date, {
-    path: ['end_date'],
-    message: 'End date must be on or after the start date',
+  .refine((values) => values.start_date === '' || values.start_date >= todayISO(), {
+    path: ['start_date'],
+    message: 'Start date cannot be in the past',
   })
+  .refine(
+    (values) =>
+      values.start_date === '' || values.end_date === '' || values.end_date >= values.start_date,
+    {
+      path: ['end_date'],
+      message: 'End date must be on or after the start date',
+    },
+  )
 
 export type TripFormValues = z.infer<typeof tripSchema>
