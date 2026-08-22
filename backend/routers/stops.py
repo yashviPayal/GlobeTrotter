@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, selectinload
@@ -13,6 +14,13 @@ router = APIRouter(
     prefix="/api/trips/{trip_id}/stops",
     tags=["Trip Stops"],
 )
+
+
+class StopReorderRequest(BaseModel):
+    stop_ids: list[int] = Field(
+        ...,
+        min_length=1,
+    )
 
 
 def get_user_trip(
@@ -87,6 +95,40 @@ def get_trip_stops(
             TripStop.trip_id == trip_id
         )
         .order_by(
+            TripStop.sequence
+        )
+    )
+
+    if exclude_stop_id is not None:
+        statement = statement.where(
+            TripStop.id != exclude_stop_id
+        )
+
+    return db.scalars(statement).all()
+
+
+def get_trip_stops_by_date(
+    trip_id: int,
+    db: Session,
+    exclude_stop_id: int | None = None,
+):
+    """
+    Used only when checking chronological date placement.
+    """
+
+    statement = (
+        select(TripStop)
+        .options(
+            selectinload(
+                TripStop.city
+            ).selectinload(
+                City.country
+            )
+        )
+        .where(
+            TripStop.trip_id == trip_id
+        )
+        .order_by(
             TripStop.start_date,
             TripStop.id,
         )
@@ -106,8 +148,6 @@ def validate_no_overlap(
     end_date,
 ):
     """
-    Stops are ordered chronologically.
-
     Adjacent stops are allowed:
 
         Stop A: Oct 20 -> Oct 22
@@ -138,17 +178,21 @@ def validate_no_overlap(
 
 
 def resequence_stops(
-    trip_id: int,
+    trip: Trip,
     db: Session,
 ):
     """
-    Recalculate itinerary sequence entirely from start_date.
+    Automatically sequence stops by start_date.
 
-    Users never manually manage sequence.
+    This ONLY runs when the trip is in date-ordering mode.
+    Manual drag-and-drop ordering is preserved otherwise.
     """
 
-    stops = get_trip_stops(
-        trip_id,
+    if trip.ordering_mode != "date":
+        return
+
+    stops = get_trip_stops_by_date(
+        trip.id,
         db,
     )
 
@@ -156,22 +200,67 @@ def resequence_stops(
         return
 
     temporary_base = (
-        max((stop.sequence for stop in stops), default=0)
+        max(
+            (
+                stop.sequence
+                for stop in stops
+            ),
+            default=0,
+        )
         + len(stops)
         + 1000
     )
 
-    # First move EVERY stop to a temporary unique sequence.
-    for index, stop in enumerate(stops, start=1):
-        stop.sequence = temporary_base + index
+    # Temporarily move every stop to a unique sequence
+    # so the UNIQUE(trip_id, sequence) constraint is not violated.
+    for index, stop in enumerate(
+        stops,
+        start=1,
+    ):
+        stop.sequence = (
+            temporary_base + index
+        )
 
     db.flush()
 
-    # Now assign the actual chronological sequence.
-    for index, stop in enumerate(stops, start=1):
+    # Assign final chronological sequence.
+    for index, stop in enumerate(
+        stops,
+        start=1,
+    ):
         stop.sequence = index
 
     db.flush()
+
+
+def assign_manual_sequence(
+    trip_id: int,
+    db: Session,
+) -> int:
+    """
+    New stops added while in manual mode are appended
+    to the end of the current itinerary.
+    """
+
+    maximum = db.scalar(
+        select(
+            TripStop.sequence
+        )
+        .where(
+            TripStop.trip_id == trip_id
+        )
+        .order_by(
+            TripStop.sequence.desc()
+        )
+        .limit(1)
+    )
+
+    return (
+        maximum + 1
+        if maximum is not None
+        else 1
+    )
+
 
 def load_stop(
     stop_id: int,
@@ -193,6 +282,10 @@ def load_stop(
 
     return db.scalar(statement)
 
+
+# ============================================================
+# CREATE STOP
+# ============================================================
 
 @router.post(
     "/",
@@ -239,24 +332,35 @@ def create_stop(
         stop_data.end_date,
     )
 
-    # Sequence is generated automatically.
+    if trip.ordering_mode == "date":
+        # Temporary sequence.
+        sequence = 1_000_000
+    else:
+        # Manual mode: append to current ordering.
+        sequence = assign_manual_sequence(
+            trip_id,
+            db,
+        )
+
     stop = TripStop(
         trip_id=trip_id,
         city_id=stop_data.city_id,
         start_date=stop_data.start_date,
         end_date=stop_data.end_date,
-        sequence=1_000_000,
+        sequence=sequence,
     )
+
     db.add(stop)
 
     try:
         db.flush()
 
-        # Recalculate chronological sequence.
-        resequence_stops(
-            trip_id,
-            db,
-        )
+        # Automatically reorder only in date mode.
+        if trip.ordering_mode == "date":
+            resequence_stops(
+                trip,
+                db,
+            )
 
         db.commit()
 
@@ -273,6 +377,10 @@ def create_stop(
         db,
     )
 
+
+# ============================================================
+# GET STOPS
+# ============================================================
 
 @router.get(
     "/",
@@ -295,6 +403,145 @@ def get_stops(
     )
 
 
+# ============================================================
+# MANUAL DRAG-AND-DROP REORDER
+# ============================================================
+
+@router.patch(
+    "/reorder",
+    response_model=list[StopResponse],
+)
+def reorder_stops(
+    trip_id: int,
+    request: StopReorderRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    trip = get_user_trip(
+        trip_id,
+        current_user,
+        db,
+    )
+
+    stops = db.scalars(
+        select(TripStop)
+        .where(
+            TripStop.trip_id == trip_id
+        )
+    ).all()
+
+    existing_ids = {
+        stop.id
+        for stop in stops
+    }
+
+    requested_ids = request.stop_ids
+
+    if len(requested_ids) != len(
+        set(requested_ids)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duplicate stop IDs are not allowed",
+        )
+
+    if set(requested_ids) != existing_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "stop_ids must contain every stop in "
+                "the trip exactly once"
+            ),
+        )
+
+    stop_by_id = {
+        stop.id: stop
+        for stop in stops
+    }
+
+    temporary_base = (
+        max(
+            (
+                stop.sequence
+                for stop in stops
+            ),
+            default=0,
+        )
+        + len(stops)
+        + 1000
+    )
+
+    # Temporary sequence values prevent
+    # UNIQUE(trip_id, sequence) conflicts.
+    for index, stop_id in enumerate(
+        requested_ids,
+        start=1,
+    ):
+        stop_by_id[stop_id].sequence = (
+            temporary_base + index
+        )
+
+    db.flush()
+
+    # Apply requested manual ordering.
+    for index, stop_id in enumerate(
+        requested_ids,
+        start=1,
+    ):
+        stop_by_id[stop_id].sequence = index
+
+    # Drag-and-drop means the user has explicitly
+    # overridden chronological ordering.
+    trip.ordering_mode = "manual"
+
+    db.commit()
+
+    return get_trip_stops(
+        trip_id,
+        db,
+    )
+
+
+# ============================================================
+# RESTORE AUTOMATIC DATE ORDERING
+# ============================================================
+
+@router.patch(
+    "/reorder/automatic",
+    response_model=list[StopResponse],
+)
+def restore_automatic_order(
+    trip_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    trip = get_user_trip(
+        trip_id,
+        current_user,
+        db,
+    )
+
+    trip.ordering_mode = "date"
+
+    db.flush()
+
+    resequence_stops(
+        trip,
+        db,
+    )
+
+    db.commit()
+
+    return get_trip_stops(
+        trip_id,
+        db,
+    )
+
+
+# ============================================================
+# UPDATE STOP
+# ============================================================
+
 @router.put(
     "/{stop_id}",
     response_model=StopResponse,
@@ -312,7 +559,9 @@ def update_stop(
         db,
     )
 
-    statement = select(TripStop).where(
+    statement = select(
+        TripStop
+    ).where(
         TripStop.id == stop_id,
         TripStop.trip_id == trip_id,
     )
@@ -383,11 +632,13 @@ def update_stop(
     try:
         db.flush()
 
-        # Sequence is recalculated after any date change.
-        resequence_stops(
-            trip_id,
-            db,
-        )
+        # Date changes automatically affect ordering
+        # only when automatic mode is enabled.
+        if trip.ordering_mode == "date":
+            resequence_stops(
+                trip,
+                db,
+            )
 
         db.commit()
 
@@ -405,6 +656,10 @@ def update_stop(
     )
 
 
+# ============================================================
+# DELETE STOP
+# ============================================================
+
 @router.delete(
     "/{stop_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -415,13 +670,15 @@ def delete_stop(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    get_user_trip(
+    trip = get_user_trip(
         trip_id,
         current_user,
         db,
     )
 
-    statement = select(TripStop).where(
+    statement = select(
+        TripStop
+    ).where(
         TripStop.id == stop_id,
         TripStop.trip_id == trip_id,
     )
@@ -439,11 +696,12 @@ def delete_stop(
     try:
         db.flush()
 
-        # Re-number remaining stops after deletion.
-        resequence_stops(
-            trip_id,
-            db,
-        )
+        # Only resequence automatically in date mode.
+        if trip.ordering_mode == "date":
+            resequence_stops(
+                trip,
+                db,
+            )
 
         db.commit()
 

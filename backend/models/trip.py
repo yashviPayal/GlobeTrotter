@@ -39,6 +39,10 @@ class Trip(Base):
             "meal_budget >= 0",
             name="ck_trip_meal_non_negative",
         ),
+        CheckConstraint(
+            "ordering_mode IN ('date', 'manual')",
+            name="ck_trip_ordering_mode",
+        ),
     )
 
     id: Mapped[int] = mapped_column(
@@ -135,6 +139,13 @@ class Trip(Base):
         "TripActivity",
         back_populates="trip",
         cascade="all, delete-orphan",
+    )
+
+    ordering_mode: Mapped[str] = mapped_column(
+        String(10),
+        default="date",
+        server_default="date",
+        nullable=False,
     )
 
 
@@ -303,3 +314,5 @@ class TripActivity(Base):
     trip_stop = relationship(
         "TripStop",
     )
+
+    
