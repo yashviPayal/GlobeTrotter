@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { useState } from 'react'
 
-import { sizedImage } from '@/lib/images'
+import { cityImage } from '@/lib/images'
 
 /**
  * A city photo that degrades to the city's initials — covering both a missing
@@ -22,7 +22,7 @@ export function CityImage({
   priority?: boolean
 }) {
   const [failed, setFailed] = useState(false)
-  const src = failed ? null : sizedImage(url, width)
+  const src = failed ? null : cityImage(name, url, width)
 
   if (!src) {
     return (

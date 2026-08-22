@@ -8,6 +8,50 @@
  */
 const UNSPLASH_HOST = 'images.unsplash.com'
 
+/**
+ * Cities we ship a local photo for, in public/cities. Served from our own
+ * origin, so the grid does not depend on a third party being reachable — and
+ * they are already sized, unlike the originals the seed URLs point at.
+ */
+const LOCAL_CITY_IMAGES = new Set([
+  'ahmedabad',
+  'amsterdam',
+  'bengaluru',
+  'delhi',
+  'dubai',
+  'goa',
+  'hyderabad',
+  'jaipur',
+  'kochi',
+  'london',
+  'manali',
+  'mumbai',
+  'paris',
+  'rome',
+  'tokyo',
+])
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+/**
+ * Prefers the bundled photo for a city, falling back to whatever the database
+ * holds for anything we do not ship an image for.
+ */
+export function cityImage(name: string, url: string | null, width: number): string | null {
+  const slug = slugify(name)
+
+  if (LOCAL_CITY_IMAGES.has(slug)) return `/cities/${slug}.jpg`
+
+  return sizedImage(url, width)
+}
+
 export function sizedImage(url: string | null, width: number): string | null {
   if (!url) return null
 

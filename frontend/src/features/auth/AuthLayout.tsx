@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 
 import { listCities } from '@/features/cities/api'
-import { sizedImage } from '@/lib/images'
+import { cityImage } from '@/lib/images'
 
 /**
  * Shared frame for log in and register, so the two screens are visibly one
@@ -39,7 +39,7 @@ export function AuthLayout({
     return withImages[Math.floor(Math.random() * Math.min(withImages.length, 6))] ?? null
   }, [data])
 
-  const background = feature ? sizedImage(feature.image_url, 1200) : null
+  const background = feature ? cityImage(feature.name, feature.image_url, 1200) : null
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
