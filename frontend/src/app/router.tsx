@@ -1,5 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
+import { LoginPage } from '@/features/auth/LoginPage'
+import { RegisterPage } from '@/features/auth/RegisterPage'
+
 import { AppShell } from './AppShell'
 import { Placeholder } from './Placeholder'
 import { RequireAuth } from './RequireAuth'
@@ -10,14 +13,8 @@ import { RequireAuth } from './RequireAuth'
  * broken and the shell can be reviewed end to end.
  */
 export const router = createBrowserRouter([
-  {
-    path: '/login',
-    element: <Placeholder title="Log in" description="Screen 1 — authentication." />,
-  },
-  {
-    path: '/register',
-    element: <Placeholder title="Create account" description="Screen 1 — registration." />,
-  },
+  { path: '/login', element: <LoginPage /> },
+  { path: '/register', element: <RegisterPage /> },
   {
     path: '/',
     element: (

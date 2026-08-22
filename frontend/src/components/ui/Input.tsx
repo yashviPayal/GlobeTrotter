@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { useId } from 'react'
+import { forwardRef, useId } from 'react'
 import type { InputHTMLAttributes } from 'react'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -8,7 +8,13 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   hint?: string
 }
 
-export function Input({ label, error, hint, className, id, ...props }: InputProps) {
+/**
+ * Ref is forwarded so form libraries can register the underlying element.
+ */
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { label, error, hint, className, id, ...props },
+  ref,
+) {
   const generatedId = useId()
   const inputId = id ?? generatedId
   const describedBy = error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined
@@ -21,6 +27,7 @@ export function Input({ label, error, hint, className, id, ...props }: InputProp
 
       <input
         {...props}
+        ref={ref}
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
@@ -43,4 +50,4 @@ export function Input({ label, error, hint, className, id, ...props }: InputProp
       ) : null}
     </div>
   )
-}
+})
