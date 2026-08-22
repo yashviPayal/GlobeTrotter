@@ -212,3 +212,34 @@ export interface PublicTrip {
   stops: PublicStop[]
   budget: PublicBudget
 }
+
+/* ---------- Admin ---------- */
+
+export interface AdminOverview {
+  total_users: number
+  total_trips: number
+  total_public_trips: number
+  total_cities: number
+  total_activities: number
+  total_trip_activities: number
+  total_activity_spend: Money
+}
+
+export interface AdminUserSummary {
+  id: number
+  name: string
+  email: string
+  role: string
+  created_at: string
+}
+
+export interface AdminTripSummary {
+  id: number
+  user_id: number
+  user_name: string
+  name: string
+  start_date: string
+  end_date: string
+  is_public: boolean
+  created_at: string
+}

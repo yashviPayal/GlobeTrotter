@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RegisterPage } from '@/features/auth/RegisterPage'
+import { AdminPage } from '@/features/admin/AdminPage'
 import { CitiesPage } from '@/features/cities/CitiesPage'
 import { CityDetailPage } from '@/features/cities/CityDetailPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
@@ -90,6 +91,11 @@ export const router = createBrowserRouter([
       {
         path: 'profile',
         element: <ProfilePage />,
+      },
+
+      {
+        path: 'admin',
+        element: <AdminPage />,
       },
     ],
   },

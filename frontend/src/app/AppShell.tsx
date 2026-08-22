@@ -17,6 +17,8 @@ const NAV = [
   { to: '/profile', label: 'Profile', end: false },
 ]
 
+const ADMIN_NAV = { to: '/admin', label: 'Admin', end: false }
+
 function navClass({ isActive }: { isActive: boolean }) {
   return clsx(
     'flex items-center rounded-control px-3 py-2 text-sm font-medium transition-colors',
@@ -28,6 +30,10 @@ export function AppShell() {
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
   const navigate = useNavigate()
+
+  // Convenience only — /api/admin/* enforces the role server-side, so hiding
+  // the link is not what keeps a non-admin out.
+  const nav = user?.role === 'admin' ? [...NAV, ADMIN_NAV] : NAV
 
   function handleLogout() {
     logout()
@@ -53,7 +59,7 @@ export function AppShell() {
 
       <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6">
         <nav aria-label="Main" className="hidden w-48 shrink-0 flex-col gap-1 md:flex">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.end} className={navClass}>
               {item.label}
             </NavLink>
@@ -69,7 +75,7 @@ export function AppShell() {
         aria-label="Main"
         className="fixed inset-x-0 bottom-0 z-20 flex border-t border-hairline bg-surface md:hidden"
       >
-        {NAV.map((item) => (
+        {nav.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
