@@ -8,6 +8,7 @@ import { ApiError } from '@/lib/api'
 import { queryKeys } from '@/lib/queryKeys'
 import type { City } from '@/types/api'
 
+import { AddCityToTrip } from './AddCityToTrip'
 import { CityCard } from './CityCard'
 import { listCities, listCountries, searchCities } from './api'
 
@@ -39,6 +40,7 @@ export function CitiesPage() {
   const [search, setSearch] = useState('')
   const [country, setCountry] = useState('all')
   const [sort, setSort] = useState<SortKey>('popularity')
+  const [action, setAction] = useState<{ city: City; mode: 'add' | 'plan' } | null>(null)
 
   const debouncedSearch = useDebouncedValue(search.trim())
   // The search endpoint requires two characters, so short queries fall back
@@ -88,6 +90,14 @@ export function CitiesPage() {
           Find a destination by name, country or how expensive it is day to day.
         </p>
       </header>
+
+      {action && (
+        <AddCityToTrip
+          city={action.city}
+          mode={action.mode}
+          onClose={() => setAction(null)}
+        />
+      )}
 
       <DataToolbar
         search={{
@@ -139,7 +149,12 @@ export function CitiesPage() {
       {visible.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {visible.map((city) => (
-            <CityCard key={city.id} city={city} />
+            <CityCard
+              key={city.id}
+              city={city}
+              onAdd={(value) => setAction({ city: value, mode: 'add' })}
+              onPlan={(value) => setAction({ city: value, mode: 'plan' })}
+            />
           ))}
         </div>
       )}

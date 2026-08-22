@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
-import { useMemo } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -13,7 +13,7 @@ import type { TripActivity, TripStop } from '@/types/api'
 
 import { BudgetBreakdown } from './BudgetBreakdown'
 import { ShareControl } from './ShareControl'
-import { getTrip, getTripBudget, listTripActivities, listTripStops } from './api'
+import { deleteTrip, getTrip, getTripBudget, listTripActivities, listTripStops } from './api'
 import { STATUS_LABEL, STATUS_TONE, getTripDays, getTripStatus } from './tripStatus'
 
 /**
@@ -36,6 +36,9 @@ function formatStopRange(stop: TripStop): string {
 export function TripDetailPage() {
   const { tripId } = useParams()
   const id = Number(tripId)
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const tripQuery = useQuery({
     queryKey: queryKeys.trips.detail(id),
@@ -82,6 +85,14 @@ export function TripDetailPage() {
 
     return map
   }, [activitiesQuery.data])
+
+  const removeTrip = useMutation({
+    mutationFn: () => deleteTrip(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.trips.all })
+      navigate('/trips', { replace: true })
+    },
+  })
 
   if (tripQuery.isPending) return <LoadingState label="Loading trip…" />
 
@@ -140,8 +151,36 @@ export function TripDetailPage() {
           <Link to={`/trips/${trip.id}/budget`}>
             <Button variant="secondary">Budget</Button>
           </Link>
+          {status !== 'completed' && (
+            <Button variant="ghost" onClick={() => setConfirmingDelete(true)}>
+              Delete
+            </Button>
+          )}
         </div>
       </header>
+
+      {confirmingDelete && (
+        <Card className="flex flex-wrap items-center justify-between gap-4 p-5">
+          <div>
+            <h2 className="font-medium text-danger">Delete this trip?</h2>
+            <p className="mt-0.5 text-sm text-muted">
+              Its stops and scheduled activities go with it. This cannot be undone.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="danger"
+              loading={removeTrip.isPending}
+              onClick={() => removeTrip.mutate()}
+            >
+              Delete trip
+            </Button>
+            <Button variant="ghost" onClick={() => setConfirmingDelete(false)}>
+              Keep it
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {budgetQuery.data && <BudgetBreakdown budget={budgetQuery.data} />}
 
