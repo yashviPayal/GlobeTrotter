@@ -2,6 +2,8 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RegisterPage } from '@/features/auth/RegisterPage'
+import { CreateTripPage } from '@/features/trips/CreateTripPage'
+import { TripsPage } from '@/features/trips/TripsPage'
 
 import { AppShell } from './AppShell'
 import { Placeholder } from './Placeholder'
@@ -32,21 +34,8 @@ export const router = createBrowserRouter([
           />
         ),
       },
-      {
-        path: 'trips',
-        element: (
-          <Placeholder
-            title="My Trips"
-            description="Screen 4 — every trip you have planned, grouped by status."
-          />
-        ),
-      },
-      {
-        path: 'trips/new',
-        element: (
-          <Placeholder title="Plan a new trip" description="Screen 3 — name, dates and budget." />
-        ),
-      },
+      { path: 'trips', element: <TripsPage /> },
+      { path: 'trips/new', element: <CreateTripPage /> },
       {
         path: 'trips/:tripId',
         element: (
