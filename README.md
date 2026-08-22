@@ -1,31 +1,31 @@
-# GlobeTrotter 🌍
+# GlobeTrotter 
 
 **GlobeTrotter** is an intelligent full-stack travel planning platform for creating, optimizing, budgeting, customizing, and sharing trips.
 
-## ✨ Product Features
+## Product Features
 
-* 🔐 User registration, login & JWT authentication
-* 🗺️ Explore countries, cities & activities
-* ✈️ Create and manage trips
-* 📍 Add multi-city destinations with date validation
-* 🤖 Automatic date-based itinerary ordering
-* 🖱️ Manual drag-and-drop itinerary ordering
-* 🎯 Automatic activity scheduling
-* ⏱️ Activity conflict & overlap detection
-* 💰 Trip budget tracking with exact decimal calculations
-* 📊 Budget utilization & spending insights
-* 🧠 Smart trip health analysis
-* 💡 Budget-aware activity recommendations
-* 🕒 Free-time detection
-* ⚡ Day-wise itinerary optimization
-* ✨ Smart Trip Assistant
-* 🔗 Public trip sharing with share codes
-* 👤 Profile management
-* 🛡️ Role-based admin access
-* 📈 Admin dashboard analytics
-* 📱 Responsive web interface
+*  User registration, login & JWT authentication
+*  Explore countries, cities & activities
+*  Create and manage trips
+*  Add multi-city destinations with date validation
+*  Automatic date-based itinerary ordering
+*  Manual drag-and-drop itinerary ordering
+*  Automatic activity scheduling
+*  Activity conflict & overlap detection
+*  Trip budget tracking with exact decimal calculations
+*  Budget utilization & spending insights
+*  Smart trip health analysis
+*  Budget-aware activity recommendations
+*  Free-time detection
+*  Day-wise itinerary optimization
+*  Smart Trip Assistant
+*  Public trip sharing with share codes
+*  Profile management
+*  Role-based admin access
+*  Admin dashboard analytics
+*  Responsive web interface
 
-## 🧠 Smart Planning
+##  Smart Planning
 
 ```text
 Trip
@@ -47,7 +47,7 @@ Day optimization
 Share / Customize
 ```
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 
@@ -80,7 +80,7 @@ Share / Customize
 * Foreign keys & constraints
 * `DECIMAL(12,2)` monetary values
 
-## 📁 Structure
+##  Structure
 
 ```text
 GlobeTrotter/
@@ -114,7 +114,7 @@ GlobeTrotter/
 └── README.md
 ```
 
-## 🔌 Core API
+##  Core API
 
 ```text
 /api/auth/*
@@ -130,7 +130,7 @@ GlobeTrotter/
 /api/admin/*
 ```
 
-## 🖥️ Frontend Screens
+##  Frontend Screens
 
 ```text
 Login
@@ -149,7 +149,7 @@ Public Shared Trip
 Admin
 ```
 
-## 🚀 Run Locally
+##  Run Locally
 
 ### Backend
 
@@ -179,7 +179,7 @@ cd backend
 alembic upgrade head
 ```
 
-## 🔐 Environment
+##  Environment
 
 Create `backend/.env`:
 
@@ -189,13 +189,6 @@ SECRET_KEY=your-secret-key
 ```
 
 Do not commit secrets.
-
-## 📌 Status
-
-**Core MVP:** ✅ Complete
-**Smart itinerary layer:** ✅ Implemented
-**Admin layer:** ✅ Implemented
-**Frontend integration:** 🚧 In progress
 
 ## Team :
 Yashvi Dalsaniya 
