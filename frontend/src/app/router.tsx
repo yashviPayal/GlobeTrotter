@@ -7,6 +7,7 @@ import { CityDetailPage } from '@/features/cities/CityDetailPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { CreateTripPage } from '@/features/trips/CreateTripPage'
 import { PublicTripPage } from '@/features/trips/PublicTripPage'
+import { TripCalendarPage } from '@/features/trips/TripCalendarPage'
 import { TripDetailPage } from '@/features/trips/TripDetailPage'
 import { TripsPage } from '@/features/trips/TripsPage'
 
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
       { path: 'trips', element: <TripsPage /> },
       { path: 'trips/new', element: <CreateTripPage /> },
       { path: 'trips/:tripId', element: <TripDetailPage /> },
+      { path: 'trips/:tripId/calendar', element: <TripCalendarPage /> },
       {
         path: 'trips/:tripId/build',
         element: (

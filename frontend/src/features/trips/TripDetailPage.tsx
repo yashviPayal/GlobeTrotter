@@ -151,9 +151,14 @@ export function TripDetailPage() {
           {trip.description && <p className="mt-2 max-w-2xl text-sm">{trip.description}</p>}
         </div>
 
-        <Button variant="secondary" onClick={() => navigate('/trips')}>
-          Back to trips
-        </Button>
+        <div className="flex gap-2">
+          <Link to={`/trips/${trip.id}/calendar`}>
+            <Button variant="secondary">Timeline</Button>
+          </Link>
+          <Button variant="ghost" onClick={() => navigate('/trips')}>
+            Back to trips
+          </Button>
+        </div>
       </header>
 
       {budgetQuery.data && <BudgetBreakdown budget={budgetQuery.data} />}
