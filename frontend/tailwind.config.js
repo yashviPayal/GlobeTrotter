@@ -1,30 +1,35 @@
 /** @type {import('tailwindcss').Config} */
+
+// Tokens are stored as "R G B" channels in styles/tokens.css, so every colour
+// is composed with <alpha-value>. Without this, opacity modifiers such as
+// ring-primary/40 compile to nothing at all.
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      // Every colour resolves to a CSS variable in styles/tokens.css, so dark
-      // mode is a token swap rather than a second set of utility classes.
       colors: {
         primary: {
-          DEFAULT: 'var(--primary)',
-          dark: 'var(--primary-dark)',
-          tint: 'var(--primary-tint)',
+          DEFAULT: token('primary'),
+          dark: token('primary-dark'),
+          tint: token('primary-tint'),
         },
+        'on-primary': token('on-primary'),
         accent: {
-          DEFAULT: 'var(--accent)',
-          tint: 'var(--accent-tint)',
+          DEFAULT: token('accent'),
+          tint: token('accent-tint'),
         },
-        brand: 'var(--brand-deep)',
-        ink: 'var(--ink)',
-        muted: 'var(--muted)',
-        soft: 'var(--soft)',
-        surface: 'var(--surface)',
-        canvas: 'var(--bg)',
-        hairline: 'var(--border)',
-        success: 'var(--success)',
-        warning: 'var(--warning)',
-        danger: 'var(--danger)',
+        brand: token('brand-deep'),
+        ink: token('ink'),
+        muted: token('muted'),
+        soft: token('soft'),
+        surface: token('surface'),
+        canvas: token('bg'),
+        hairline: token('border'),
+        success: token('success'),
+        warning: token('warning'),
+        danger: token('danger'),
       },
       fontFamily: {
         display: ['Sora', 'Cambria', 'Georgia', 'serif'],
@@ -35,8 +40,8 @@ export default {
         control: '8px',
       },
       boxShadow: {
-        card: '0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06)',
-        lifted: '0 4px 12px rgb(15 23 42 / 0.08), 0 2px 4px rgb(15 23 42 / 0.04)',
+        card: '0 1px 2px rgb(0 0 0 / 0.18), 0 1px 3px rgb(0 0 0 / 0.22)',
+        lifted: '0 4px 12px rgb(0 0 0 / 0.28), 0 2px 4px rgb(0 0 0 / 0.18)',
       },
     },
   },

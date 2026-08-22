@@ -1,62 +1,68 @@
 /**
  * The single source of colour for the app.
  *
- * Nothing else in the codebase may hardcode a hex value — Tailwind's theme
- * maps every colour utility onto these variables, so switching theme is one
- * attribute on <html> rather than a second set of classes.
+ * Values are raw "R G B" channels, not hex, so Tailwind can compose them with
+ * an alpha channel: `rgb(var(--primary) / <alpha-value>)`. That is what makes
+ * `ring-primary/40` and `text-ink/75` work — with a plain hex in a var, those
+ * utilities silently generate nothing.
  *
- * Palette: white surfaces with a reddish-pink brand. Greys are warmed towards
- * the brand hue rather than left neutral-blue, so nothing reads as cold next
- * to the pink.
+ * Default is the deep theme: plum-charcoal surfaces with the reddish-pink
+ * brand. The white theme is still here under [data-theme='light'].
  */
 
 :root {
-  --primary: #e11d48;
-  --primary-dark: #be123c;
-  --primary-tint: #fff1f3;
+  --primary: 251 113 133; /* #fb7185 */
+  --primary-dark: 253 164 175; /* #fda4af — hover lifts on a dark surface */
+  --primary-tint: 67 21 31; /* #43151f */
+  --on-primary: 59 10 21; /* #3b0a15 — text on a primary fill */
 
-  --accent: #f59e0b;
-  --accent-tint: #fef3c7;
+  --accent: 251 191 36; /* #fbbf24 */
+  --accent-tint: 66 32 6; /* #422006 */
 
-  /* Deep rose used for full-bleed brand panels. */
-  --brand-deep: #4c0519;
+  /* Deep rose for full-bleed brand panels. */
+  --brand-deep: 46 10 20; /* #2e0a14 */
 
-  --ink: #1b1014;
-  --muted: #78606a;
-  --soft: #a88f98;
+  --ink: 248 240 243; /* #f8f0f3 */
+  --muted: 185 167 175; /* #b9a7af */
+  --soft: 160 139 150; /* #a08b96 — lifted to clear 4.5:1 on --surface */
 
-  --surface: #ffffff;
-  --bg: #fff9fa;
-  --border: #f3e4e8;
+  --surface: 36 26 34; /* #241a22 */
+  --bg: 26 18 24; /* #1a1218 */
+  --border: 58 43 52; /* #3a2b34 */
 
-  --success: #16a34a;
-  --warning: #f59e0b;
-  --danger: #dc2626;
+  --success: 74 222 128; /* #4ade80 */
+  --warning: 251 191 36; /* #fbbf24 */
+  --danger: 248 113 113; /* #f87171 */
 
   /* 4px spacing grid, two elevation levels — see docs/ARCHITECTURE.md */
   --radius-card: 12px;
   --radius-control: 8px;
+
+  color-scheme: dark;
 }
 
-:root[data-theme='dark'] {
-  --primary: #fb7185;
-  --primary-dark: #f43f5e;
-  --primary-tint: #4c0519;
+:root[data-theme='light'] {
+  --primary: 225 29 72; /* #e11d48 */
+  --primary-dark: 190 18 60; /* #be123c */
+  --primary-tint: 255 241 243; /* #fff1f3 */
+  --on-primary: 255 255 255; /* #ffffff */
 
-  --accent: #fbbf24;
-  --accent-tint: #422006;
+  --accent: 245 158 11; /* #f59e0b */
+  --accent-tint: 254 243 199; /* #fef3c7 */
 
-  --brand-deep: #1e1418;
+  --brand-deep: 76 5 25; /* #4c0519 */
 
-  --ink: #fdf2f4;
-  --muted: #b8a3aa;
-  --soft: #8a7078;
+  --ink: 27 16 20; /* #1b1014 */
+  --muted: 120 96 106; /* #78606a */
+  --soft: 126 105 115; /* #7e6973 — darkened to clear 4.5:1 on white */
 
-  --surface: #1e1418;
-  --bg: #140d10;
-  --border: #33222a;
+  --surface: 255 255 255; /* #ffffff */
+  --bg: 255 249 250; /* #fff9fa */
+  --border: 243 228 232; /* #f3e4e8 */
 
-  --success: #22c55e;
-  --warning: #fbbf24;
-  --danger: #ef4444;
+  --success: 22 163 74; /* #16a34a */
+  --warning: 245 158 11; /* #f59e0b */
+  --danger: 220 38 38; /* #dc2626 */
+
+  color-scheme: light;
 }

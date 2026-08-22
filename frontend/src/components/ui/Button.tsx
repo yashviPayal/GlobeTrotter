@@ -11,12 +11,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
+// Fills use on-primary rather than white: on the deep theme the brand pink is
+// light, so white-on-pink would not carry enough contrast.
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-primary text-white hover:bg-primary-dark disabled:hover:bg-primary',
+  primary: 'bg-primary text-on-primary hover:bg-primary-dark disabled:hover:bg-primary',
   secondary:
     'bg-surface text-ink border border-hairline hover:border-primary hover:text-primary',
   ghost: 'text-muted hover:text-ink hover:bg-primary-tint',
-  danger: 'bg-danger text-white hover:opacity-90',
+  danger: 'bg-danger text-on-primary hover:opacity-90',
 }
 
 const SIZES: Record<Size, string> = {
