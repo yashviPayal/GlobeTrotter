@@ -2,6 +2,8 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import { LoginPage } from '@/features/auth/LoginPage'
 import { RegisterPage } from '@/features/auth/RegisterPage'
+import { CitiesPage } from '@/features/cities/CitiesPage'
+import { CityDetailPage } from '@/features/cities/CityDetailPage'
 import { CreateTripPage } from '@/features/trips/CreateTripPage'
 import { TripsPage } from '@/features/trips/TripsPage'
 
@@ -57,18 +59,8 @@ export const router = createBrowserRouter([
           <Placeholder title="Budget" description="Screen 9 — cost breakdown and alerts." />
         ),
       },
-      {
-        path: 'cities',
-        element: (
-          <Placeholder title="Explore cities" description="Screen 7 — search and filter cities." />
-        ),
-      },
-      {
-        path: 'cities/:cityId',
-        element: (
-          <Placeholder title="City" description="Screen 8 — things to do in this city." />
-        ),
-      },
+      { path: 'cities', element: <CitiesPage /> },
+      { path: 'cities/:cityId', element: <CityDetailPage /> },
       {
         path: 'profile',
         element: (
