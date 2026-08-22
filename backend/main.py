@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+from routers.stops import router as stops_router
 from routers.auth import router as auth_router
 from routers.cities import router as cities_router
 from routers.countries import router as countries_router
@@ -18,7 +18,7 @@ app.include_router(auth_router)
 app.include_router(cities_router)
 app.include_router(countries_router)
 app.include_router(trips_router)
-
+app.include_router(stops_router)
 
 @app.get("/")
 def root():
