@@ -4,4 +4,8 @@ backend/__pycache__/
 frontend/node_modules/
 frontend/dist/
 .vscode/
+<<<<<<< HEAD
 .claude/
+=======
+.claude
+>>>>>>> 9744080 (doc: update gitignore)
