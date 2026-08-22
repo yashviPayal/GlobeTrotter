@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, func
+from sqlalchemy import CheckConstraint, DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
@@ -8,6 +8,13 @@ from database import Base
 
 class User(Base):
     __tablename__ = "users"
+
+    __table_args__ = (
+        CheckConstraint(
+            "role IN ('user', 'admin')",
+            name="ck_user_role",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
@@ -28,6 +35,13 @@ class User(Base):
 
     password_hash: Mapped[str] = mapped_column(
         String(255),
+        nullable=False,
+    )
+
+    role: Mapped[str] = mapped_column(
+        String(10),
+        default="user",
+        server_default="user",
         nullable=False,
     )
 
