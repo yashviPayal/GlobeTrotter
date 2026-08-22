@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/Button'
+import type { Money } from '@/types/api'
 import { Card } from '@/components/ui/Card'
 import {
   ErrorState,
@@ -236,7 +237,7 @@ function BudgetCard({
   value,
 }: {
   label: string
-  value: string
+  value: Money
 }) {
   return (
     <Card className="p-4">
@@ -258,7 +259,7 @@ function BudgetRow({
   strong = false,
 }: {
   label: string
-  amount: string
+  amount: Money
   strong?: boolean
 }) {
   return (

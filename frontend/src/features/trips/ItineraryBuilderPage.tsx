@@ -30,9 +30,8 @@ import {
   optimizeTripDay,
   reorderTripStops,
   restoreAutomaticStopOrder,
-  type TripActivity,
-  type TripStop,
 } from './api'
+import type { TripActivity, TripStop } from '@/types/api'
 
 
 interface City {
